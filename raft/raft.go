@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
+	"golang.org/x/exp/rand"
 )
 
 // None is a placeholder node ID used when there is no leader.
@@ -135,7 +136,8 @@ type Raft struct {
 	// heartbeat interval, should send
 	heartbeatTimeout int
 	// baseline of election interval
-	electionTimeout int
+	electionTimeout       int
+	randomElectionTimeout int
 	// number of ticks since it reached last heartbeatTimeout.
 	// only leader keeps heartbeatElapsed.
 	heartbeatElapsed int
@@ -204,6 +206,7 @@ func (r *Raft) tick() {
 	// Your Code Here (2A).
 	if r.State == StateLeader {
 		r.heartbeatElapsed++
+
 		if r.heartbeatElapsed >= r.heartbeatTimeout {
 			r.heartbeatElapsed = 0
 			r.raiseRequestToPeers(pb.Message{
@@ -212,6 +215,7 @@ func (r *Raft) tick() {
 		}
 	} else {
 		r.electionElapsed++
+
 		if r.electionElapsed >= r.electionTimeout {
 			r.electionElapsed = 0
 			r.raiseLeaderElection()
@@ -396,4 +400,10 @@ func (r *Raft) raiseRequestToPeers(m pb.Message) {
 		m.To = peer
 		r.msgs = append(r.msgs, m)
 	}
+}
+
+func (r *Raft) resetTimeout() {
+	r.electionElapsed = 0
+	r.heartbeatElapsed = 0
+	r.randomElectionTimeout = r.electionTimeout + rand.Intn(r.electionTimeout)
 }
