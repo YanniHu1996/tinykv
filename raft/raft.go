@@ -16,6 +16,7 @@ package raft
 
 import (
 	"errors"
+	"fmt"
 
 	pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
 )
@@ -223,23 +224,7 @@ func (r *Raft) tick() {
 	r.electionElapsed++
 	if r.electionElapsed >= r.electionTimeout {
 		r.electionElapsed = 0
-
-		r.becomeCandidate()
-		r.Vote = r.id
-		r.votes = make(map[uint64]bool)
-		r.votes[r.id] = true
-		for peer := range r.Prs {
-			if peer == r.id {
-				continue
-			}
-
-			r.msgs = append(r.msgs, pb.Message{
-				From:    r.id,
-				To:      peer,
-				Term:    r.Term,
-				MsgType: pb.MessageType_MsgRequestVote,
-			})
-		}
+		r.raiseLeaderElection()
 	}
 }
 
@@ -276,7 +261,7 @@ func (r *Raft) Step(m pb.Message) error {
 		case pb.MessageType_MsgAppend:
 			r.becomeFollower(m.Term, m.From)
 		case pb.MessageType_MsgHup:
-			r.becomeCandidate()
+			r.raiseLeaderElection()
 		}
 
 	case StateCandidate:
@@ -284,7 +269,12 @@ func (r *Raft) Step(m pb.Message) error {
 		case pb.MessageType_MsgAppend:
 			r.becomeFollower(m.Term, m.From)
 		case pb.MessageType_MsgHup:
-			r.becomeCandidate()
+			r.raiseLeaderElection()
+		case pb.MessageType_MsgRequestVoteResponse:
+			r.votes[m.From] = !m.Reject
+			if r.majorityVote() {
+				r.becomeLeader()
+			}
 		}
 
 	case StateLeader:
@@ -320,4 +310,44 @@ func (r *Raft) addNode(id uint64) {
 // removeNode remove a node from raft group
 func (r *Raft) removeNode(id uint64) {
 	// Your Code Here (3A).
+}
+
+func (r *Raft) raiseLeaderElection() {
+	r.becomeCandidate()
+
+	r.Vote = r.id
+	r.votes = make(map[uint64]bool)
+	r.votes[r.id] = true
+
+	if len(r.Prs) == 1 {
+		r.becomeLeader()
+		return
+	}
+
+	for peer := range r.Prs {
+		if peer == r.id {
+			continue
+		}
+
+		r.msgs = append(r.msgs, pb.Message{
+			From:    r.id,
+			To:      peer,
+			Term:    r.Term,
+			MsgType: pb.MessageType_MsgRequestVote,
+		})
+	}
+}
+
+func (r *Raft) majorityVote() bool {
+	counter := 0
+	for _, vote := range r.votes {
+		if vote {
+			counter++
+		}
+	}
+	fmt.Println("prs: ", len(r.Prs))
+	if len(r.Prs) == 1 {
+		fmt.Println("counter: ", counter)
+	}
+	return counter > len(r.Prs)/2
 }
