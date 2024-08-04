@@ -309,6 +309,7 @@ func testNonleaderElectionTimeoutRandomized(t *testing.T, state StateType) {
 			r.tick()
 			time++
 		}
+		// fmt.Println("time: ", time)
 		timeouts[time] = true
 	}
 
