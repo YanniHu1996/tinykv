@@ -231,11 +231,22 @@ func TestFollowerVote2AA(t *testing.T) {
 		r.Term = 1
 		r.Vote = tt.vote
 
-		r.Step(pb.Message{From: tt.nvote, To: 1, Term: 1, MsgType: pb.MessageType_MsgRequestVote})
+		r.Step(pb.Message{
+			From:    tt.nvote,
+			To:      1,
+			Term:    1,
+			MsgType: pb.MessageType_MsgRequestVote,
+		})
 
 		msgs := r.readMessages()
 		wmsgs := []pb.Message{
-			{From: 1, To: tt.nvote, Term: 1, MsgType: pb.MessageType_MsgRequestVoteResponse, Reject: tt.wreject},
+			{
+				From:    1,
+				To:      tt.nvote,
+				Term:    1,
+				MsgType: pb.MessageType_MsgRequestVoteResponse,
+				Reject:  tt.wreject,
+			},
 		}
 		if !reflect.DeepEqual(msgs, wmsgs) {
 			t.Errorf("#%d: msgs = %v, want %v", i, msgs, wmsgs)
