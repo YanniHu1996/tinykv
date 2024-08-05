@@ -16,7 +16,6 @@ package raft
 
 import (
 	"errors"
-	"fmt"
 
 	pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
 	"golang.org/x/exp/rand"
@@ -181,8 +180,9 @@ func newRaft(c *Config) *Raft {
 		votes:   make(map[uint64]bool),
 		msgs:    make([]pb.Message, 0),
 
-		electionTimeout:  c.ElectionTick,
-		heartbeatTimeout: c.HeartbeatTick,
+		electionTimeout:       c.ElectionTick,
+		randomElectionTimeout: c.ElectionTick,
+		heartbeatTimeout:      c.HeartbeatTick,
 	}
 
 	return raft
@@ -216,9 +216,12 @@ func (r *Raft) tick() {
 	} else {
 		r.electionElapsed++
 
-		if r.electionElapsed >= r.electionTimeout {
-			r.electionElapsed = 0
-			r.raiseLeaderElection()
+		if r.electionElapsed >= r.randomElectionTimeout {
+			r.resetElectionTimeout()
+			r.Step(pb.Message{
+				MsgType: pb.MessageType_MsgHup,
+			})
+
 		}
 	}
 
@@ -248,12 +251,12 @@ func (r *Raft) becomeLeader() {
 	// Your Code Here (2A).
 	// NOTE: Leader should propose a noop entry on its term
 	r.State = StateLeader
-	r.electionElapsed = 0
-	r.heartbeatElapsed = 0
 	r.Lead = r.id
 	r.msgs = append(r.msgs, pb.Message{
 		MsgType: pb.MessageType_MsgPropose,
 	})
+	r.electionElapsed = 0
+	r.heartbeatElapsed = 0
 }
 
 // Step the entrance of handle message, see `MessageType`
@@ -357,10 +360,7 @@ func (r *Raft) majorityVote() bool {
 			counter++
 		}
 	}
-	fmt.Println("prs: ", len(r.Prs))
-	if len(r.Prs) == 1 {
-		fmt.Println("counter: ", counter)
-	}
+
 	return counter > len(r.Prs)/2
 }
 
@@ -402,8 +402,7 @@ func (r *Raft) raiseRequestToPeers(m pb.Message) {
 	}
 }
 
-func (r *Raft) resetTimeout() {
+func (r *Raft) resetElectionTimeout() {
 	r.electionElapsed = 0
-	r.heartbeatElapsed = 0
 	r.randomElectionTimeout = r.electionTimeout + rand.Intn(r.electionTimeout)
 }
