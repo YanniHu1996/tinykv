@@ -407,3 +407,8 @@ func (r *Raft) resetTimeout() {
 	r.heartbeatElapsed = 0
 	r.randomElectionTimeout = r.electionTimeout + rand.Intn(r.electionTimeout)
 }
+func (r *Raft) doResetTimeout() {
+	r.electionElapsed = 0
+	r.heartbeatElapsed = 0
+	r.randomElectionTimeout = r.electionTimeout + rand.Intn(r.electionTimeout)
+}
