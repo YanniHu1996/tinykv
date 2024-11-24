@@ -6,7 +6,7 @@ require (
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f
 	github.com/docker/go-units v0.4.0
 	github.com/gogo/protobuf v1.3.2
-	github.com/golang/protobuf v1.5.4
+	github.com/golang/protobuf v1.3.4
 	github.com/google/btree v1.0.0
 	github.com/juju/errors v0.0.0-20181118221551-089d3ea4e4d5
 	github.com/juju/testing v0.0.0-20200510222523-6c8c298c77a0 // indirect
@@ -20,16 +20,16 @@ require (
 	github.com/pingcap/log v0.0.0-20200117041106-d28c14d3b1cd
 	github.com/pingcap/tidb v1.1.0-beta.0.20200309111804-d8264d47f760
 	github.com/pingcap/tipb v0.0.0-20200212061130-c4d518eb1d60
-	github.com/pkg/errors v0.9.1
+	github.com/pkg/errors v0.8.1
+	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/shirou/gopsutil/v3 v3.22.7
-	github.com/sirupsen/logrus v1.6.0
-	github.com/stretchr/testify v1.9.0
+	github.com/sirupsen/logrus v1.2.0
+	github.com/stretchr/testify v1.8.1
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20191023171146-3cf2f69b5738
 	go.uber.org/zap v1.14.0
-	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
-	golang.org/x/net v0.26.0
-	google.golang.org/grpc v1.64.1
-	google.golang.org/grpc/examples v0.0.0-20240802160953-e524655becd8 // indirect
+	golang.org/x/exp v0.0.0-20190121172915-509febef88a4
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974
+	google.golang.org/grpc v1.25.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 
