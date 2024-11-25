@@ -209,8 +209,11 @@ func (r *Raft) tick() {
 
 		if r.heartbeatElapsed >= r.heartbeatTimeout {
 			r.heartbeatElapsed = 0
-			r.raiseRequestToPeers(pb.Message{
-				MsgType: pb.MessageType_MsgHeartbeat,
+			// r.raiseRequestToPeers(pb.Message{
+			// 	MsgType: pb.MessageType_MsgHeartbeat,
+			// })
+			r.Step(pb.Message{
+				MsgType: pb.MessageType_MsgBeat,
 			})
 		}
 	} else {
@@ -292,8 +295,12 @@ func (r *Raft) Step(m pb.Message) error {
 
 	case StateLeader:
 		switch m.MsgType {
+		case pb.MessageType_MsgBeat:
+			r.raiseRequestToPeers(pb.Message{
+				MsgType: pb.MessageType_MsgHeartbeat,
+			})
 		case pb.MessageType_MsgAppend:
-			r.becomeFollower(m.Term, m.From)
+			r.handleAppendEntries(m)
 		case pb.MessageType_MsgRequestVote:
 			r.handleRequestVote(m)
 		}
@@ -304,12 +311,12 @@ func (r *Raft) Step(m pb.Message) error {
 // handleAppendEntries handle AppendEntries RPC request
 func (r *Raft) handleAppendEntries(m pb.Message) {
 	// Your Code Here (2A).
+	r.becomeFollower(m.Term, m.From)
 }
 
 // handleHeartbeat handle Heartbeat RPC request
 func (r *Raft) handleHeartbeat(m pb.Message) {
 	// Your Code Here (2A).
-
 }
 
 // handleSnapshot handle Snapshot RPC request
