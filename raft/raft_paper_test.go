@@ -175,17 +175,17 @@ func TestLeaderElectionInOneRoundRPC2AA(t *testing.T) {
 	}{
 		// win the election when receiving votes from a majority of the servers
 		{1, map[uint64]bool{}, StateLeader},
-		// {3, map[uint64]bool{2: true, 3: true}, StateLeader},
-		// {3, map[uint64]bool{2: true}, StateLeader},
-		// {5, map[uint64]bool{2: true, 3: true, 4: true, 5: true}, StateLeader},
-		// {5, map[uint64]bool{2: true, 3: true, 4: true}, StateLeader},
-		// {5, map[uint64]bool{2: true, 3: true}, StateLeader},
+		{3, map[uint64]bool{2: true, 3: true}, StateLeader},
+		{3, map[uint64]bool{2: true}, StateLeader},
+		{5, map[uint64]bool{2: true, 3: true, 4: true, 5: true}, StateLeader},
+		{5, map[uint64]bool{2: true, 3: true, 4: true}, StateLeader},
+		{5, map[uint64]bool{2: true, 3: true}, StateLeader},
 
-		// // stay in candidate if it does not obtain the majority
-		// {3, map[uint64]bool{}, StateCandidate},
-		// {5, map[uint64]bool{2: true}, StateCandidate},
-		// {5, map[uint64]bool{2: false, 3: false}, StateCandidate},
-		// {5, map[uint64]bool{}, StateCandidate},
+		// // stay in candidate if it does not obtain the m·ajority
+		{3, map[uint64]bool{}, StateCandidate},
+		{5, map[uint64]bool{2: true}, StateCandidate},
+		{5, map[uint64]bool{2: false, 3: false}, StateCandidate},
+		{5, map[uint64]bool{}, StateCandidate},
 	}
 	for i, tt := range tests {
 		r := newTestRaft(1, idsBySize(tt.size), 10, 1, NewMemoryStorage())
@@ -398,7 +398,7 @@ func TestLeaderStartReplication2AB(t *testing.T) {
 	msgs := r.readMessages()
 	sort.Sort(messageSlice(msgs))
 	ent := pb.Entry{Index: li + 1, Term: 1, Data: []byte("some data")}
-	wents := []pb.Entry{ent}
+
 	wmsgs := []pb.Message{
 		{From: 1, To: 2, Term: 1, MsgType: pb.MessageType_MsgAppend, Index: li, LogTerm: 1, Entries: []*pb.Entry{&ent}, Commit: li},
 		{From: 1, To: 3, Term: 1, MsgType: pb.MessageType_MsgAppend, Index: li, LogTerm: 1, Entries: []*pb.Entry{&ent}, Commit: li},
@@ -406,6 +406,8 @@ func TestLeaderStartReplication2AB(t *testing.T) {
 	if !reflect.DeepEqual(msgs, wmsgs) {
 		t.Errorf("msgs = %+v, want %+v", msgs, wmsgs)
 	}
+
+	wents := []pb.Entry{ent}
 	if g := r.RaftLog.unstableEntries(); !reflect.DeepEqual(g, wents) {
 		t.Errorf("ents = %+v, want %+v", g, wents)
 	}

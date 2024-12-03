@@ -266,7 +266,6 @@ func (r *Raft) becomeLeader() {
 // on `eraftpb.proto` for what msgs should be handled
 func (r *Raft) Step(m pb.Message) error {
 	// Your Code Here (2A).
-
 	switch r.State {
 	case StateFollower:
 		switch m.MsgType {
@@ -295,6 +294,13 @@ func (r *Raft) Step(m pb.Message) error {
 
 	case StateLeader:
 		switch m.MsgType {
+		case pb.MessageType_MsgPropose:
+			// r.RaftLog.entries = append(r.RaftLog.entries, pb.Entry{
+			// 	Term:  rz.Term,
+			// 	Index: r.RaftLog.LastIndex() + 1,
+			// 	Data:  m.Entries[0].Data,
+			// })
+
 		case pb.MessageType_MsgBeat:
 			r.raiseRequestToPeers(pb.Message{
 				MsgType: pb.MessageType_MsgHeartbeat,
