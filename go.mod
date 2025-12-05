@@ -23,7 +23,7 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/shirou/gopsutil/v3 v3.22.7
-	github.com/sirupsen/logrus v1.2.0
+	github.com/sirupsen/logrus v1.8.3
 	github.com/stretchr/testify v1.8.1
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20191023171146-3cf2f69b5738
 	go.uber.org/zap v1.14.0
